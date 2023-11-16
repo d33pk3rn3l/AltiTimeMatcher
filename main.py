@@ -82,7 +82,6 @@ class AppWindow(ctk.CTk):
             self.altimeter_data = pd.read_csv(file_name, sep=';', header=0)
             self.altimeter_data_file_name = file_name
         
-
     def show_height(self):
         # Logic to show height above ground
         if self.altimeter_data is not None:
