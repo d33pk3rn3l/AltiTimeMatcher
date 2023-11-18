@@ -55,6 +55,22 @@ class AppWindow(ctk.CTk):
         self.title('AIR-ETH Altimeter Time Matching Tool')
         self.geometry('800x200')
 
+    def open_in_default_browser(self, file_path):
+        """Open a given file in the default web browser."""
+        if not os.path.exists(file_path):
+            print(f"File not found: {file_path}")
+            return False
+
+        try:
+            if os.name == 'nt':  # for Windows
+                os.system(f'start {file_path}')
+            elif os.name == 'posix':  # for macOS and Linux
+                os.system(f'open {file_path}' if sys.platform == 'darwin' else f'xdg-open {file_path}')
+        except Exception as e:
+            print(f"Error opening file: {e}")
+            return False
+        return True
+
     def load_imu_data(self, file_name):
         # Load your data here
         columns_to_import = ["UTC_Nano","UTC_Year","UTC_Month","UTC_Day","UTC_Hour","UTC_Minute","UTC_Second","FreeAcc_U"]
@@ -89,21 +105,15 @@ class AppWindow(ctk.CTk):
             return False
 
         # Save the plot to a temporary HTML file
-        plot_html = pio.to_html(fig, full_html=False)
-        with open("temp_plot_alti.html", "w") as file:
-            file.write(plot_html)
-
-        # Save the plot to a temporary HTML file
-        plot_html = pio.to_html(fig, full_html=False)
-        file_path = "temp_plot_alti.html"
-        with open(file_path, "w") as file:
-            file.write(plot_html)
-
-        # Open in the default web browser using OS command
-        if os.name == 'nt':  # for Windows
-            os.system(f'start {file_path}')
-        elif os.name == 'posix':  # for macOS and Linux
-            os.system(f'open {file_path}' if sys.platform == 'darwin' else f'xdg-open {file_path}')
+        try:
+            plot_html = pio.to_html(fig, full_html=False)
+            file_path = os.path.abspath("temp_plot_alti.html")
+            with open(file_path, "w") as file:
+                file.write(plot_html)
+            self.open_in_default_browser(file_path)
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
 
     def select_imu_file(self):
         # Select and load the altimeter file (txt file)
@@ -136,14 +146,17 @@ class AppWindow(ctk.CTk):
         else: 
             print("No IMU data loaded")
             return None
-        
-        # Save the plot to a temporary HTML file
-        plot_html = pio.to_html(fig, full_html=False)
-        with open("temp_plot_imu.html", "w") as file:
-            file.write(plot_html)
 
-        # Launch the webview script
-        subprocess.Popen(["python", "webview_plotly.py", "temp_plot_imu.html"])
+        # Save the plot to a temporary HTML file
+        try:
+            plot_html = pio.to_html(fig, full_html=False)
+            file_path = os.path.abspath("temp_plot_imu.html")
+            with open(file_path, "w") as file:
+                file.write(plot_html)
+            self.open_in_default_browser(file_path)
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
 
     def fill_timestamps(self):
         # Check if all required data is loaded
