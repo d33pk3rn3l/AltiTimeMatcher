@@ -159,3 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 .DS_Store
+
+# Temporary files
+temp_plot_alti.html
+temp_plot_imu.html
