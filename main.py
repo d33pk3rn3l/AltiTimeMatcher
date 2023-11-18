@@ -1,5 +1,4 @@
 import subprocess
-import threading
 import pandas as pd
 from datetime import datetime, timedelta
 import customtkinter as ctk
@@ -7,8 +6,6 @@ from tkinter import filedialog
 import plotly.express as px
 import plotly.io as pio
 from tkinter import messagebox
-
-import webview
 
 class AppWindow(ctk.CTk):
     def __init__(self):
