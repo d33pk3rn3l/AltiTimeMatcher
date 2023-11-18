@@ -1,11 +1,12 @@
-import subprocess
-import pandas as pd
-from datetime import datetime, timedelta
 import customtkinter as ctk
-from tkinter import filedialog
+import os
+import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-from tkinter import messagebox
+import subprocess
+import sys
+from datetime import datetime, timedelta
+from tkinter import filedialog, messagebox
 
 class AppWindow(ctk.CTk):
     def __init__(self):
@@ -92,8 +93,17 @@ class AppWindow(ctk.CTk):
         with open("temp_plot_alti.html", "w") as file:
             file.write(plot_html)
 
-        # Launch the webview script
-        subprocess.Popen(["python", "webview_plotly.py", "temp_plot_alti.html"])
+        # Save the plot to a temporary HTML file
+        plot_html = pio.to_html(fig, full_html=False)
+        file_path = "temp_plot_alti.html"
+        with open(file_path, "w") as file:
+            file.write(plot_html)
+
+        # Open in the default web browser using OS command
+        if os.name == 'nt':  # for Windows
+            os.system(f'start {file_path}')
+        elif os.name == 'posix':  # for macOS and Linux
+            os.system(f'open {file_path}' if sys.platform == 'darwin' else f'xdg-open {file_path}')
 
     def select_imu_file(self):
         # Select and load the altimeter file (txt file)
