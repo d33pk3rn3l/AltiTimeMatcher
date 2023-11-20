@@ -192,5 +192,12 @@ class AppWindow(ctk.CTk):
 
 # Running the app
 if __name__ == '__main__':
+    if getattr(sys, 'frozen', False):
+        import pyi_splash
+
     app = AppWindow()
+    
+    if getattr(sys, 'frozen', False):
+        pyi_splash.close()
+    
     app.mainloop()
