@@ -39,10 +39,10 @@ class AppWindow(ctk.CTk):
         self.show_z_accel_button.grid(row=1, column=1, pady=pady, padx=padx, sticky="we")
 
         self.timestamp_input = ctk.CTkEntry(self, placeholder_text="Timestamp of liftoff (eg. 2023-11-08 9:47:12.000)")
-        self.timestamp_input.grid(row=2, column=0, pady=pady, padx=padx, sticky="we")
+        self.timestamp_input.grid(row=2, column=1, pady=pady, padx=padx, sticky="we")
 
         self.altimeter_row_input = ctk.CTkEntry(self, placeholder_text="Altimeter row index of liftoff")
-        self.altimeter_row_input.grid(row=2, column=1, pady=pady, padx=padx, sticky="we")
+        self.altimeter_row_input.grid(row=2, column=0, pady=pady, padx=padx, sticky="we")
 
         # Set the fill_timestamps_button at the bottom and center it
         self.fill_timestamps_button = ctk.CTkButton(self, text="Fill in timestamps", command=self.fill_timestamps)
