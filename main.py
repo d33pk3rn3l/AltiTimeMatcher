@@ -178,12 +178,11 @@ class AppWindow(ctk.CTk):
         # Typecast the height to nullable integer (Int64) if it is finite
         formatted_data['Height_mm'] = formatted_data['Height_mm'].apply(lambda x: x if pd.isnull(x) else int(x)).astype('Int64')
 
-
         # Save the data to the class
         self.formatted_data = formatted_data
 
-        # Save the data to a CSV file according to the original file name
-        self.formatted_data.to_csv(f"{self.altimeter_data_file_name}_formatted.csv", index=False)
+        # Save the data to a CSV file according to the original file name without headers and ";" as separator
+        self.formatted_data.to_csv(f"{self.altimeter_data_file_name}_formatted.csv", index=False, header=False, sep=';')
 
         # Show a success message
         messagebox.showinfo("Success", f"Timestamps filled in and data saved to CSV at {self.altimeter_data_file_name}_formatted.csv")
