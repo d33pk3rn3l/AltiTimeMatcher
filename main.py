@@ -176,7 +176,7 @@ class AppWindow(ctk.CTk):
         formatted_data = self.altimeter_data[['YYYY-MM-DD', 'HH:MM:SS.SSSS', 'Height_mm']]
 
         # Typecast the height to nullable integer (Int64) if it is finite
-        formatted_data['Height_mm'] = formatted_data['Height_mm'].apply(lambda x: x if pd.isnull(x) else int(x)).astype('Int64')
+        formatted_data.loc[:, 'Height_mm'] = formatted_data['Height_mm'].apply(lambda x: x if pd.isnull(x) else int(x)).astype('Int64')
 
         # Save the data to the class
         self.formatted_data = formatted_data
