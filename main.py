@@ -79,9 +79,15 @@ class AppWindow(ctk.CTk):
             print(f"Error in generate_and_open_html_plot: {e}")
 
     def load_imu_data(self, file_name):
-        # Load your data here
-        columns_to_import = ["UTC_Nano","UTC_Year","UTC_Month","UTC_Day","UTC_Hour","UTC_Minute","UTC_Second","FreeAcc_U"]
-        imu_data = pd.read_csv(file_name, sep=',', usecols=columns_to_import, header=12)
+        # Load your data here, with a try-except block to handle missing columns
+        try:
+            # Attempt to load the data with 'FreeAcc_U'
+            columns_to_import = ["UTC_Nano","UTC_Year","UTC_Month","UTC_Day","UTC_Hour","UTC_Minute","UTC_Second","FreeAcc_U"]
+            imu_data = pd.read_csv(file_name, sep=',', usecols=columns_to_import, header=12)
+        except ValueError:
+            # If 'FreeAcc_U' is not found, load with 'Acc_X' instead
+            columns_to_import = ["UTC_Nano","UTC_Year","UTC_Month","UTC_Day","UTC_Hour","UTC_Minute","UTC_Second","Acc_X"]
+            imu_data = pd.read_csv(file_name, sep=',', usecols=columns_to_import, header=12)
 
         # Convert the time columns to datetime objects
         imu_data['UTC_DateTime'] = pd.to_datetime(imu_data[['UTC_Year', 'UTC_Month', 'UTC_Day', 'UTC_Hour', 'UTC_Minute', 'UTC_Second', 'UTC_Nano']].rename(columns={
@@ -94,6 +100,13 @@ class AppWindow(ctk.CTk):
             'UTC_Nano': 'nanosecond'}))
 
         # Remove all columns except the date and the acceleration
+        acceleration_column = 'FreeAcc_U' if 'FreeAcc_U' in imu_data.columns else 'Acc_X'
+
+        # Watch out, this always exports it as Free U acceleration (lazy solution)
+        # Rename acceleration column to 'FreeAcc_U'
+        imu_data = imu_data.rename(columns={acceleration_column: 'FreeAcc_U'})
+
+        # Return only the date and the unified acceleration column
         return imu_data[['UTC_DateTime', 'FreeAcc_U']]
 
     def select_altimeter_file(self):
