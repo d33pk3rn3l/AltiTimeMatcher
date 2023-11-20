@@ -167,7 +167,7 @@ class AppWindow(ctk.CTk):
         # Add new columns for date and time
         self.altimeter_data['Date'] = [actual_start_time + timedelta(seconds=t) for t in self.altimeter_data['Time']]
         self.altimeter_data['YYYY-MM-DD'] = self.altimeter_data['Date'].dt.strftime('%Y-%m-%d')
-        self.altimeter_data['HH:MM:SS.SSSS'] = self.altimeter_data['Date'].dt.strftime('%H:%M:%S.%f').str.slice(stop=12)
+        self.altimeter_data['HH:MM:SS.SSSS'] = self.altimeter_data['Date'].dt.strftime('%H:%M:%S.%f').str.slice(stop=13)
 
         # Convert the height from meters to millimeters as integers to finite values
         self.altimeter_data['Height_mm'] = self.altimeter_data['Value'].apply(lambda x: x*1000 if pd.notnull(x) else x)
@@ -181,9 +181,9 @@ class AppWindow(ctk.CTk):
         # Save the data to the class
         self.formatted_data = formatted_data
 
-        # Remove the .csv in self.altimeter_data_file_name
-        self.altimeter_data_file_name = self.altimeter_data_file_name[:-4]
-        
+        # Remove the .csv in self.altimeter_data_file_name if it exists
+        self.altimeter_data_file_name = self.altimeter_data_file_name.replace(".csv", "")
+
         # Save the data to a CSV file according to the original file name without headers and ";" as separator
         self.formatted_data.to_csv(f"{self.altimeter_data_file_name}_formatted.csv", index=False, header=False, sep=';')
 
