@@ -3,10 +3,10 @@ import os
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-import subprocess
 import sys
 from datetime import datetime, timedelta
 from tkinter import filedialog, messagebox
+import webbrowser
 
 class AppWindow(ctk.CTk):
     def __init__(self):
@@ -55,21 +55,28 @@ class AppWindow(ctk.CTk):
         self.title('AIR-ETH Altimeter Time Matching Tool')
         self.geometry('800x200')
 
-    def open_in_default_browser(self, file_path):
-        """Open a given file in the default web browser."""
-        if not os.path.exists(file_path):
-            print(f"File not found: {file_path}")
-            return False
+    def generate_and_open_html_plot(self, fig, file_name):
+        """
+        Generates an HTML file from a Plotly figure and opens it in the default web browser.
 
+        Args:
+        - fig (plotly.graph_objs._figure.Figure): The Plotly figure to convert to HTML.
+        - file_name (str): The base name of the HTML file to be created.
+        """
         try:
-            if os.name == 'nt':  # for Windows
-                os.system(f'start {file_path}')
-            elif os.name == 'posix':  # for macOS and Linux
-                os.system(f'open {file_path}' if sys.platform == 'darwin' else f'xdg-open {file_path}')
+            # Determine the base path for the file (next to the executable or script)
+            base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+            file_path = os.path.join(base_path, file_name)
+
+            # Convert the figure to HTML and save it
+            plot_html = pio.to_html(fig, full_html=False)
+            with open(file_path, "w") as file:
+                file.write(plot_html)
+
+            # Open the file in the default web browser
+            webbrowser.open(f'file://{file_path}')
         except Exception as e:
-            print(f"Error opening file: {e}")
-            return False
-        return True
+            print(f"Error in generate_and_open_html_plot: {e}")
 
     def load_imu_data(self, file_name):
         # Load your data here
@@ -94,6 +101,11 @@ class AppWindow(ctk.CTk):
         file_name = filedialog.askopenfilename(title='Open file', filetypes=[('CSV', '*.csv')])
         if file_name:
             self.altimeter_data = pd.read_csv(file_name, sep=';', header=0)
+            # Check if header contains "Value" and "Time"
+            if not all(x in self.altimeter_data.columns for x in ["Value", "Time"]):
+                messagebox.showwarning("Invalid file", "The selected file does not contain the columns 'Value' and 'Time'")
+                self.altimeter_data = None
+                return
             self.altimeter_data_file_name = file_name
         
     def show_height(self):
@@ -101,19 +113,9 @@ class AppWindow(ctk.CTk):
         if self.altimeter_data is not None:
             filtered_data = self.altimeter_data[self.altimeter_data['Value'] < 300]
             fig = px.line(filtered_data, x=filtered_data.index, y='Value', title='Altimeter Height vs Row Index (below 300 m)')
+            self.generate_and_open_html_plot(fig, "temp_plot_alti.html")
         else: 
-            return False
-
-        # Save the plot to a temporary HTML file
-        try:
-            plot_html = pio.to_html(fig, full_html=False)
-            file_path = os.path.abspath("temp_plot_alti.html")
-            with open(file_path, "w") as file:
-                file.write(plot_html)
-            self.open_in_default_browser(file_path)
-        except Exception as e:
-            print(f"Error: {e}")
-            return False
+            print("Altimeter data is not loaded")
 
     def select_imu_file(self):
         # Select and load the altimeter file (txt file)
@@ -139,24 +141,11 @@ class AppWindow(ctk.CTk):
     def show_u_acceleration(self):
         # Logic to show Z-Acceleration
         if self.imu_data is not None:
-            # Filter 400hz data to 10hz
             imu_data_to_plot = self.imu_data.iloc[::40, :]
-            print(imu_data_to_plot.head())
             fig = px.line(imu_data_to_plot, x='UTC_DateTime', y='FreeAcc_U', title='Free Acceleration in UP vs Time')
+            self.generate_and_open_html_plot(fig, "temp_plot_imu.html")
         else: 
-            print("No IMU data loaded")
-            return None
-
-        # Save the plot to a temporary HTML file
-        try:
-            plot_html = pio.to_html(fig, full_html=False)
-            file_path = os.path.abspath("temp_plot_imu.html")
-            with open(file_path, "w") as file:
-                file.write(plot_html)
-            self.open_in_default_browser(file_path)
-        except Exception as e:
-            print(f"Error: {e}")
-            return None
+            print("IMU data is not loaded")
 
     def fill_timestamps(self):
         # Check if all required data is loaded
