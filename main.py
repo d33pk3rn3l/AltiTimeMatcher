@@ -70,7 +70,7 @@ class AppWindow(ctk.CTk):
 
             # Convert the figure to HTML and save it
             plot_html = pio.to_html(fig, full_html=False)
-            with open(file_path, "w") as file:
+            with open(file_path, "w", encoding='utf-8') as file:
                 file.write(plot_html)
 
             # Open the file in the default web browser
