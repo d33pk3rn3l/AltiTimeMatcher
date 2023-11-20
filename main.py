@@ -181,6 +181,9 @@ class AppWindow(ctk.CTk):
         # Save the data to the class
         self.formatted_data = formatted_data
 
+        # Remove the .csv in self.altimeter_data_file_name
+        self.altimeter_data_file_name = self.altimeter_data_file_name[:-4]
+        
         # Save the data to a CSV file according to the original file name without headers and ";" as separator
         self.formatted_data.to_csv(f"{self.altimeter_data_file_name}_formatted.csv", index=False, header=False, sep=';')
 
