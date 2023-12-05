@@ -1,6 +1,8 @@
 # AIR-ETH Altimeter Time Matching Tool
 This application is a GUI tool for loading, visualizing, and processing altimeter and IMU data. It's designed to help match the timestamps of altimeter data with the corresponding IMU data. The application is written in Python and packaged as an executable for Windows for easy deployment.
 
+![](img/splash.png)
+
 ## Features
 Load altimeter data from a CSV file
 Load IMU data from a TXT file
@@ -18,6 +20,8 @@ webview
 
 
 ## Usage
+![](img/screengrab.png)
+
 Run the executable file to start the application.
 Use the "Select Altimeter File" and "Select IMU File" buttons to load your data files.
 Enter the timestamp of liftoff and the altimeter row index of liftoff in the provided fields.
