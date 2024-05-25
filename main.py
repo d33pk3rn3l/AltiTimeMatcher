@@ -1,12 +1,14 @@
-import customtkinter as ctk
 import os
+import sys
+import webbrowser
+from datetime import datetime, timedelta
+from tkinter import filedialog, messagebox
+
+import customtkinter as ctk
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-import sys
-from datetime import datetime, timedelta
-from tkinter import filedialog, messagebox
-import webbrowser
+
 
 class AppWindow(ctk.CTk):
     def __init__(self):
@@ -35,7 +37,7 @@ class AppWindow(ctk.CTk):
         self.imu_file_button = ctk.CTkButton(self, text="Select IMU File", command=self.select_imu_file)
         self.imu_file_button.grid(row=0, column=1, pady=pady, padx=padx, sticky="we")
 
-        self.show_z_accel_button = ctk.CTkButton(self, text="Show U-Acceleration", command=self.show_u_acceleration)
+        self.show_z_accel_button = ctk.CTkButton(self, text="Show IMU Data", command=self.show_imu_data)
         self.show_z_accel_button.grid(row=1, column=1, pady=pady, padx=padx, sticky="we")
 
         self.timestamp_input = ctk.CTkEntry(self, placeholder_text="Timestamp of liftoff (eg. 2023-11-08 9:47:12.000)")
@@ -82,11 +84,11 @@ class AppWindow(ctk.CTk):
         # Load your data here, with a try-except block to handle missing columns
         try:
             # Attempt to load the data with 'FreeAcc_U'
-            columns_to_import = ["UTC_Nano","UTC_Year","UTC_Month","UTC_Day","UTC_Hour","UTC_Minute","UTC_Second","FreeAcc_U"]
+            columns_to_import = ["UTC_Nano","UTC_Year","UTC_Month","UTC_Day","UTC_Hour","UTC_Minute","UTC_Second","FreeAcc_U", "Altitude", "Acc_Z", "Vel_U"]
             imu_data = pd.read_csv(file_name, sep=',', usecols=columns_to_import, header=12)
         except ValueError:
             # If 'FreeAcc_U' is not found, load with 'Acc_X' instead
-            columns_to_import = ["UTC_Nano","UTC_Year","UTC_Month","UTC_Day","UTC_Hour","UTC_Minute","UTC_Second","Acc_X"]
+            columns_to_import = ["UTC_Nano","UTC_Year","UTC_Month","UTC_Day","UTC_Hour","UTC_Minute","UTC_Second","Acc_X", "Altitude", "Acc_Z", "Vel_U"]
             imu_data = pd.read_csv(file_name, sep=',', usecols=columns_to_import, header=12)
 
         # Convert the time columns to datetime objects
@@ -99,15 +101,11 @@ class AppWindow(ctk.CTk):
             'UTC_Second': 'second',
             'UTC_Nano': 'nanosecond'}))
 
-        # Remove all columns except the date and the acceleration
-        acceleration_column = 'FreeAcc_U' if 'FreeAcc_U' in imu_data.columns else 'Acc_X'
+        # Remove UTC columns
+        imu_data = imu_data.drop(columns=['UTC_Year', 'UTC_Month', 'UTC_Day', 'UTC_Hour', 'UTC_Minute', 'UTC_Second', 'UTC_Nano'])
 
-        # Watch out, this always exports it as Free U acceleration (lazy solution)
-        # Rename acceleration column to 'FreeAcc_U'
-        imu_data = imu_data.rename(columns={acceleration_column: 'FreeAcc_U'})
-
-        # Return only the date and the unified acceleration column
-        return imu_data[['UTC_DateTime', 'FreeAcc_U']]
+        # Return the df
+        return imu_data
 
     def select_altimeter_file(self):
         # Select and load the altimeter file
@@ -151,13 +149,41 @@ class AppWindow(ctk.CTk):
             messagebox.showwarning("Invalid input", "The altimeter row index must be an integer")
             return None
         
-    def show_u_acceleration(self):
-        # Logic to show Z-Acceleration
+    def show_imu_data(self):
+        """
+        This function plots the IMU data over time for specific columns if the data is available.
+
+        The function first checks if the IMU data is not None. If data is available, it selects every 40th row of the data 
+        and defines a list of columns to plot. It then initializes a plotly figure and adds each column to the plot if it 
+        exists in the data. Finally, it generates and opens an HTML plot.
+
+        If the IMU data is not loaded, it prints a message indicating the same.
+
+        Note: If you want to add more columns to plot, you need to load them in the load_imu_data function.
+
+        Parameters:
+        None
+
+        Returns:
+        None
+        """
+        # Logic to show IMU data with multiple lines
         if self.imu_data is not None:
             imu_data_to_plot = self.imu_data.iloc[::40, :]
-            fig = px.line(imu_data_to_plot, x='UTC_DateTime', y='FreeAcc_U', title='Free Acceleration in UP vs Time')
+            
+            # Define the list of columns to plot
+            columns_to_plot = ['FreeAcc_U', 'Acc_Z', 'Altitude', 'Vel_U']
+            
+            # Initialize the plotly figure
+            fig = px.line(title='IMU Data vs Time')
+
+            # Add each column to the plot if it exists in the data
+            for col in columns_to_plot:
+                if col in imu_data_to_plot.columns:
+                    fig.add_scatter(x=imu_data_to_plot['UTC_DateTime'], y=imu_data_to_plot[col], mode='lines', name=col)
+            
             self.generate_and_open_html_plot(fig, "temp_plot_imu.html")
-        else: 
+        else:
             print("IMU data is not loaded")
 
     def fill_timestamps(self):
