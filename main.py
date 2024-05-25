@@ -1,12 +1,14 @@
-import customtkinter as ctk
 import os
+import sys
+import webbrowser
+from datetime import datetime, timedelta
+from tkinter import filedialog, messagebox
+
+import customtkinter as ctk
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-import sys
-from datetime import datetime, timedelta
-from tkinter import filedialog, messagebox
-import webbrowser
+
 
 class AppWindow(ctk.CTk):
     def __init__(self):
