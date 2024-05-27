@@ -33,3 +33,11 @@ This tool assumes that the altimeter data is in a CSV file with a 'Value' column
 
 ## Executable
 The application is packaged as an executable for Windows. Simply download the .exe file and run it to start the application. No installation is required.
+
+If you want to make a new release, you can use pyinstaller with the following command:
+
+```bash
+ pyinstaller --onefile --clean --splash img/splash.png --name AltiTimeMatcher --icon img/icon.icns --noconsole main.py
+```
+
+Watch out for the environment and keep it small and clean, otherwise pyinstaller packs many unnecessary dependencies. 
